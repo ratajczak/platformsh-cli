@@ -57,13 +57,19 @@ class DrushHelper extends Helper
         if (isset($version)) {
             return $version;
         }
-        exec($this->getDrushExecutable() . ' --version', $drushVersion, $returnCode);
+        exec($this->getDrushExecutable() . ' --version', $drushVersionOutput, $returnCode);
         if ($returnCode > 0) {
             $message = $returnCode == 127 ? 'Error finding Drush version' : 'Drush is not installed';
             throw new \Exception($message, $returnCode);
         }
-        $versionParts = explode(':', $drushVersion[0], 2);
-        $version = trim($versionParts[1]);
+
+        foreach ($drushVersionOutput as $line) {
+          preg_match('/([0-9])([.0-9]*)/i', $line, $matches);
+          $num = intval($matches[0]);
+          if (is_numeric($num) && $num > 0) {
+            return $num;
+          }
+        }
 
         return $version;
     }
